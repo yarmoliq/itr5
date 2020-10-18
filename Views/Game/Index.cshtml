@@ -32,8 +32,8 @@
 
 
 <script>
-    
-    var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
     var connectionId;
     
     connection.start().catch(err=>{

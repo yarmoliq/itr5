@@ -54,7 +54,7 @@ namespace itr5
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapHub<GameHub>("/chathub");
+                endpoints.MapHub<GameHub>("/gamehub");
             });
         }
     }
