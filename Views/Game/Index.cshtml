@@ -1,3 +1,50 @@
 @{
     ViewData["Title"] = "Game";
 }
+
+<style>
+    td {
+    border: 1px solid black;
+    height: 200px;
+    width: 200px;
+    }
+</style>
+
+<table id="tictactoe-table">
+    <tr>
+        <td id="cell_1"></td>
+        <td id="cell_2"></td>
+        <td id="cell_3"></td>
+    </tr>
+    <tr>
+        <td id="cell_4"></td>
+        <td id="cell_5"></td>
+        <td id="cell_6"></td>
+    </tr>
+    <tr>
+        <td id="cell_7"></td>
+        <td id="cell_8"></td>
+        <td id="cell_9"></td>
+    </tr>
+</table>
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+
+
+<script>
+    
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+    var connectionId;
+    
+    connection.start().catch(err=>{
+        alert("couldnt connect");
+    })
+    .then(function()
+    {
+        connection.invoke("GetConnectionId").then((data)=>{
+            connectionId = data;
+            console.log(data);
+        })
+    })
+    
+</script>
