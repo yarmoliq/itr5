@@ -28,23 +28,40 @@
     </tr>
 </table>
 
+<button onclick="printOC()">check connection</button>
+
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 
 
 <script>
 
-    var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
-    var connectionId;
-    
+    let connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
+    let myConnectionId;
+    let opponentConnectionId;
+
     connection.start().catch(err=>{
         alert("couldnt connect");
     })
-    .then(function()
-    {
-        connection.invoke("GetConnectionId").then((data)=>{
-            connectionId = data;
-            console.log(data);
+    .then( function(){
+        connection.invoke("NewConnection").then( (data) => {
+                opponentConnectionId = data;
         })
     })
+    .then( function()
+    {
+        connection.invoke("GetConnectionId").then((data)=>{
+            myConnectionId = data;
+            console.log("MY ID: " + myConnectionId);
+        })
+    })
+
+    connection.on("AssignOpponent", (ocid)=>{
+        // console.log("Opponent's connection id = " + ocid);
+        opponentConnectionId = ocid;
+    })
+
+    let printOC = function(){
+        console.log("PRINTING OPPONENTS CONNECTION ID: " + opponentConnectionId);
+    }
     
 </script>
