@@ -1,16 +1,20 @@
-﻿@{
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
     ViewData["Title"] = "Home";
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <div class="d-flex justify-content-around">
-    <button class="btn-lg">
+
+    <button  class="btn-lg" onclick="location.href='@Url.Action("Index", "Game")'"> 
         <i class="fa fa-plus"></i>    
         New game
     </button>
-    <button class="btn-lg">
-        <i class="fa fa-search"></i>
+
+    <button  class="btn-lg" onclick="location.href='@Url.Action("Find", "Game")'"> 
+        <i class="fa fa-search"></i>    
         Find game
     </button>
+
 </div>
