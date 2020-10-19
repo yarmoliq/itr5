@@ -15,27 +15,39 @@
 
     connection.start().catch(err=>{
         alert("couldnt connect");
+    })
+    .then( function()
+    {
+        connection.invoke("GetConnectionId").then((data)=>{
+            console.log("MY ID: " + data);
+        });
     });
 
     let updatelist = function() {
         let games = []
 
         connection.invoke("GetAllGames").then( function (data) {
-            console.log("data: " + data);
-            games = data;
+
+            console.log(data);
 
             let grid = document.getElementById("available-games-grid");
 
             $("#available-games-grid").empty();
 
-            games.forEach( (game) => {
-                let tile = document.createElement("button");
-                let text = document.createTextNode(game);
-                tile.appendChild(text);
+            data.forEach( (piece) => {
+                const game = piece.split(",");
+                
+                const bt = document.createElement("span");
+                bt.setAttribute("class", "badge-top");
+                bt.appendChild( document.createTextNode(game[2]) );
+                
+                const tile = document.createElement("button");
                 tile.setAttribute("class", "bg-green");
                 tile.setAttribute("data-role", "tile");
                 tile.setAttribute("data-group-title", "General");
-                tile.setAttribute("id", game);
+                tile.setAttribute("id", game[1]);
+                tile.appendChild( document.createTextNode(game[0]) );
+                tile.appendChild(bt);
                 grid.appendChild(tile);
             });
         });
@@ -45,8 +57,6 @@
         let tileClicked = event.target.id;
         console.log("clicked: " + tileClicked);
         
-        connection.invoke("ConnectToGame", tileClicked).then((gameId) => {
-            window.location.href = '@Url.Content("~/Game/Index?gameId=")' + gameId;
-        });
+        window.location.href = '@Url.Content("~/Game/Index?gameId=")' + tileClicked;
     });
 </script>

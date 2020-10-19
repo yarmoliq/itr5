@@ -50,18 +50,14 @@
         });
 
         if(connectTo === ""){
-            alert("creating new game");
             connection.invoke("NewGame");
         }
         else{
-            alert("Will connect to: " + connectTo);
+            connection.invoke("ConnectToGame", connectTo).then(()=>{
+                alert("Connected to: " + connectTo);
+            });
         }
 
-    });
-
-    connection.on("AssignOpponent", (ocid)=>{
-        console.log("Opponent assigned = " + ocid);
-        opponentConnectionId = ocid;
     });
 
     let printOC = function(){

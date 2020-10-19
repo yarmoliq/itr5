@@ -35,7 +35,7 @@ namespace itr5.Hubs
             }
         }
 
-        public string ConnectToGame(string gameId)
+        public void ConnectToGame(string gameId)
         {
             GameModel targetGame;
             if( availableGames.TryGetValue(gameId, out targetGame) )
@@ -45,6 +45,8 @@ namespace itr5.Hubs
 
                 players[id].GameId = gameId;
 
+                // _logger.LogWarning("Connected " + id + " to " + targetGame.player1.Id);
+
                 if(targetGame.player2 == null)
                 {
                     targetGame.player2 = players[id];
@@ -53,21 +55,26 @@ namespace itr5.Hubs
                 {
                     targetGame.watchers.Add(players[id]);
                 }
-                return targetGame.Id;
             }
-
-            return String.Empty;
         }
 
         public string[] GetAllGames()
         {
-            var keys = availableGames.Keys;
-            string[] array = new string[keys.Count];
-            keys.CopyTo(array, 0);
-            return array;
+            // _logger.LogInformation(Convert.ToString(availableGames.Count));
+
+            var arr = Array.ConvertAll(availableGames.ToArray(),
+                new Converter<KeyValuePair<string,GameModel>, string>((item) => 
+                    item.Value.Name + "," + item.Value.Id + "," + Convert.ToString(
+                                                                item.Value.watchers.Count
+                                                                + Convert.ToInt16(item.Value.player1 != null)
+                                                                + Convert.ToInt16(item.Value.player2 != null))));
+
+            return arr;
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
+            // _logger.LogWarning("disconnected: " + Context.ConnectionId);
+
             PlayerModel disconnectedPlayer;
             if( players.TryGetValue(Context.ConnectionId, out disconnectedPlayer) )
             {

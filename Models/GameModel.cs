@@ -20,6 +20,7 @@ namespace itr5.Models
         public GameModel(PlayerModel creator)
         {
             Id = creator.Id;
+            Name = "name";
             player1 = creator;
             player2 = null;
         }
