@@ -82,7 +82,7 @@ namespace itr5.Hubs
                 PlayerModel removePlayer;
                 players.TryRemove(disconnectedPlayer.Id, out removePlayer);
             }
-            
+
             await base.OnDisconnectedAsync(exception);
         }
     }

@@ -59,5 +59,8 @@
     let printOC = function(){
         console.log("PRINTING OPPONENTS CONNECTION ID: " + opponentConnectionId);
     }
-    
+
+    connection.on("RedirectToMainScreen",()=>{
+        window.location.href = "/Home/Index";
+    })    
 </script>

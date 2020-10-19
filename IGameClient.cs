@@ -4,7 +4,8 @@ namespace itr5.Hubs
 {
     public interface IGameClient
     {
-        Task AssignOpponent(string opponentConnectionId);
-        Task OpponentsMove(string move);
+        Task Move(string move);
+
+        Task RedirectToMainScreen();
     }
 }
