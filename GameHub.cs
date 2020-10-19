@@ -60,22 +60,29 @@ namespace itr5.Hubs
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            PlayerModel disconnectedPlayer = new PlayerModel(Context.ConnectionId);
-
-            GameModel game;
-            if( availableGames.TryGetValue(disconnectedPlayer.GameId, out game) )
+            PlayerModel disconnectedPlayer;
+            if (players.TryGetValue(Context.ConnectionId, out disconnectedPlayer))
             {
-                if( game.player1 == disconnectedPlayer ||
-                    game.player2== disconnectedPlayer)
+                GameModel game;
+                if (availableGames.TryGetValue(disconnectedPlayer.GameId, out game))
+                {
+                    if (game.player1 == disconnectedPlayer ||
+                        game.player2 == disconnectedPlayer)
                     {
                         // kill game
+                        GameModel removeGame;
+                        availableGames.TryRemove(game.Id, out removeGame);
                     }
                     else
                     {
-                    game.watchers.Remove(disconnectedPlayer);
+                        game.watchers.Remove(disconnectedPlayer);
+                    }
                 }
-            }
 
+                PlayerModel removePlayer;
+                players.TryRemove(disconnectedPlayer.Id, out removePlayer);
+            }
+            
             await base.OnDisconnectedAsync(exception);
         }
     }
