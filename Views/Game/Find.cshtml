@@ -1,5 +1,9 @@
-<ul id="ul-games">
-</ul>
+<link rel="stylesheet" href="https://cdn.metroui.org.ua/v4/css/metro-all.min.css">
+<script src="https://cdn.metroui.org.ua/v4/js/metro.min.js"></script>
+
+<div id="available-games-grid" class="tiles-grid tiles-group size-3" data-group-title="General">
+    @* tiles will be created here *@
+</div>
 
 <button id="update-btn" onclick="updatelist()">update</button>
 
@@ -22,15 +26,18 @@
             console.log("data: " + data);
             games = data;
 
-            let ul = document.getElementById("ul-games");
+            let grid = document.getElementById("available-games-grid");
 
-            $('ul').empty()
+            $("#available-games-grid").empty()
 
             games.forEach( (game) => {
-                let item = document.createElement("li");
+                let tile = document.createElement("button");
                 let text = document.createTextNode(game);
-                item.appendChild(text);
-                ul.appendChild(item); 
+                tile.appendChild(text);
+                tile.setAttribute("class", "bg-green");
+                tile.setAttribute("data-role", "tile");
+                tile.setAttribute("data-group-title", "General");
+                grid.appendChild(tile);
             })
         });
     }
