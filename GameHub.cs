@@ -5,18 +5,28 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using itr5.Models;
 
 namespace itr5.Hubs
 {
     public class GameHub : Hub
     {
         // private static string waitingPlayer;
-        public static ConcurrentDictionary<string, string[]> availableGames = new ConcurrentDictionary<string, string[]>();
+        public static ConcurrentDictionary<string, GameModel> availableGames = new ConcurrentDictionary<string, GameModel>();
+        public static ConcurrentDictionary<string, PlayerModel> players = new ConcurrentDictionary<string, PlayerModel>();
         private readonly ILogger<GameHub> _logger;
 
         public GameHub(ILogger<GameHub> l)
         {
             _logger = l;
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            PlayerModel newPlayer = new PlayerModel(Context.ConnectionId);
+            players[newPlayer.Id] = newPlayer;
+
+            await base.OnConnectedAsync();
         }
 
         public async Task SendMessage(string message, string connectionId)
@@ -33,22 +43,38 @@ namespace itr5.Hubs
 
         public async Task NewGame()
         {
-            // _logger.LogInformation("New connection: " + Context.ConnectionId);
-            availableGames[Context.ConnectionId] = new string[] { };
+            PlayerModel player;
+            if(players.TryGetValue(Context.ConnectionId, out player))
+            {
+                availableGames[player.Id] = new GameModel(player);
+                player.GameId = player.Id; // see: GameModel constructor
+            }
         }
 
         public string[] GetAllGames()
         {
             var keys = availableGames.Keys;
-            // _logger.LogInformation(Convert.ToString(keys.Count));
             string[] array = new string[keys.Count];
             keys.CopyTo(array, 0);
             return array;
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            string[] res;
-            availableGames.TryRemove(Context.ConnectionId, out res);
+            PlayerModel disconnectedPlayer = new PlayerModel(Context.ConnectionId);
+
+            GameModel game;
+            if( availableGames.TryGetValue(disconnectedPlayer.GameId, out game) )
+            {
+                if( game.player1 == disconnectedPlayer ||
+                    game.player2== disconnectedPlayer)
+                    {
+                        // kill game
+                    }
+                    else
+                    {
+                    game.watchers.Remove(disconnectedPlayer);
+                }
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
