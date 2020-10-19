@@ -10,8 +10,10 @@ namespace itr5.Models
     public class GameModel
     {
         public string Id { get; }
-        public PlayerModel player1 { get; private set; }
-        public PlayerModel player2 { get; private set; }
+
+        public string Name;
+        public PlayerModel player1 { get; set; }
+        public PlayerModel player2 { get; set; }
 
         public List<PlayerModel> watchers = new List<PlayerModel>();
 

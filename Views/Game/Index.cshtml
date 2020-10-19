@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "Game";
 }
+@model itr5.Models.PlayerModel
 
 <style>
     td {
@@ -31,36 +32,43 @@
 <button onclick="printOC()">check connection</button>
 
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
-
+<script src="~/js/getUrlParams.js"></script>
 
 <script>
 
     let connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
-    let myConnectionId;
-    let opponentConnectionId;
+    var connectTo = '@Model.Id';
 
     connection.start().catch(err=>{
         alert("couldnt connect");
     })
     .then( function()
     {
-        connection.invoke("NewGame").then(()=>{});
         connection.invoke("GetConnectionId").then((data)=>{
-            myConnectionId = data;
-            console.log("MY ID: " + myConnectionId);
-        })
-    })
+            console.log("MY ID: " + data);
+            console.log("OPP ID: " + '@Model.Id');
+        });
+
+        if(connectTo === ""){
+            connection.invoke("NewGame").then(()=>{});
+        }
+        else{
+            alert("Will connect to: " + connectTo);
+        }
+
+    });
 
     connection.on("AssignOpponent", (ocid)=>{
         console.log("Opponent assigned = " + ocid);
         opponentConnectionId = ocid;
-    })
+    });
 
     let printOC = function(){
         console.log("PRINTING OPPONENTS CONNECTION ID: " + opponentConnectionId);
-    }
+    };
 
-    connection.on("RedirectToMainScreen",()=>{
-        window.location.href = "/Home/Index";
-    })    
+        
+    //connection.on("Redirect",(controller, view)=>{
+    //    window.location.href = "/"+controller+"/" + view;
+    //});    
 </script>

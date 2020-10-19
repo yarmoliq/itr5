@@ -6,6 +6,8 @@ namespace itr5.Hubs
     {
         Task Move(string move);
 
-        Task RedirectToMainScreen();
+        Task Redirect(string controller, string action);
+
+        Task RedirectToGame(string gameId);
     }
 }

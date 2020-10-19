@@ -11,7 +11,6 @@ namespace itr5.Hubs
 {
     public class GameHub : Hub
     {
-        // private static string waitingPlayer;
         public static ConcurrentDictionary<string, GameModel> availableGames = new ConcurrentDictionary<string, GameModel>();
         public static ConcurrentDictionary<string, PlayerModel> players = new ConcurrentDictionary<string, PlayerModel>();
         private readonly ILogger<GameHub> _logger;
@@ -25,19 +24,19 @@ namespace itr5.Hubs
         {
             PlayerModel newPlayer = new PlayerModel(Context.ConnectionId);
             players[newPlayer.Id] = newPlayer;
-
+        
             await base.OnConnectedAsync();
         }
-
-        public async Task SendMessage(string message, string connectionId)
-        {
-            await Clients.All.SendAsync("ReceiveMessage", message, connectionId);
-        }
-
-        public async Task MakeMove(string opponentConnectionId, string move)
-        {
-            await Clients.User(opponentConnectionId).SendAsync("OpponentsMove", move);
-        }
+//
+        // public async Task SendMessage(string message, string connectionId)
+        // {
+        //     await Clients.All.SendAsync("ReceiveMessage", message, connectionId);
+        // }
+        //
+        // public async Task MakeMove(string opponentConnectionId, string move)
+        // {
+        //     await Clients.User(opponentConnectionId).SendAsync("OpponentsMove", move);
+        // }
 
         public string GetConnectionId() => Context.ConnectionId;
 
@@ -49,6 +48,29 @@ namespace itr5.Hubs
                 availableGames[player.Id] = new GameModel(player);
                 player.GameId = player.Id; // see: GameModel constructor
             }
+        }
+
+        public async Task<string> ConnectToGame(string gameId)
+        {
+            // await this.Clients.Caller.SendAsync("Redirect", "Game", "Index");
+
+            PlayerModel player;
+            if( players.TryGetValue(Context.ConnectionId, out player) )
+            {
+                GameModel game;
+                if( availableGames.TryGetValue(gameId, out game) )
+                {
+                    if(game.player2 == null)
+                    {
+                        // await this.Clients.Client(Context.ConnectionId).SendAsync("RedirectToGame", gameId);
+                        return gameId;
+                        // _logger.LogWarning(player.Id + " is connecting to " + gameId);
+                        // game.player2 = player;
+                    }
+                }
+            }
+
+            return String.Empty;
         }
 
         public string[] GetAllGames()

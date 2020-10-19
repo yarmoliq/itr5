@@ -12,12 +12,10 @@
 
 <script>
     let connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
-    let myConnectionId;
-    let opponentConnectionId;
 
     connection.start().catch(err=>{
         alert("couldnt connect");
-    })
+    });
 
     let updatelist = function() {
         let games = []
@@ -28,7 +26,7 @@
 
             let grid = document.getElementById("available-games-grid");
 
-            $("#available-games-grid").empty()
+            $("#available-games-grid").empty();
 
             games.forEach( (game) => {
                 let tile = document.createElement("button");
@@ -37,8 +35,18 @@
                 tile.setAttribute("class", "bg-green");
                 tile.setAttribute("data-role", "tile");
                 tile.setAttribute("data-group-title", "General");
+                tile.setAttribute("id", game);
                 grid.appendChild(tile);
-            })
+            });
         });
-    }
+    };
+
+    $("#available-games-grid").click( function(event){
+        let tileClicked = event.target.id;
+        console.log("clicked: " + tileClicked);
+        
+        connection.invoke("ConnectToGame", tileClicked).then((gameId) => {
+            window.location.href = '@Url.Content("~/Game/Index?gameId=")' + gameId;
+        });
+    });
 </script>

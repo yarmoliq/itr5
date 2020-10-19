@@ -18,9 +18,15 @@ namespace itr5.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index([FromQuery] string gameId)
         {
-            return View();
+            // _logger.LogWarning(gameId);
+
+            // im using player model just to pass gameId to view
+            // because for some stupid reason i cant just pass System.String object
+            PlayerModel pidor = new PlayerModel(gameId);
+
+            return View(pidor);
         }
 
         public IActionResult Find()
