@@ -1,0 +1,37 @@
+<ul id="ul-games">
+</ul>
+
+<button id="update-btn" onclick="updatelist()">update</button>
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<script>
+    let connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
+    let myConnectionId;
+    let opponentConnectionId;
+
+    connection.start().catch(err=>{
+        alert("couldnt connect");
+    })
+
+    let updatelist = function() {
+        let games = []
+
+        connection.invoke("GetAllGames").then( function (data) {
+            console.log("data: " + data);
+            games = data;
+
+            let ul = document.getElementById("ul-games");
+
+            $('ul').empty()
+
+            games.forEach( (game) => {
+                let item = document.createElement("li");
+                let text = document.createTextNode(game);
+                item.appendChild(text);
+                ul.appendChild(item); 
+            })
+        });
+    }
+</script>

@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace itr5.Hubs
 {
     public class GameHub : Hub
     {
-        private static string waitingPlayer;
+        // private static string waitingPlayer;
+        public static ConcurrentDictionary<string, string[]> availableGames = new ConcurrentDictionary<string, string[]>();
         private readonly ILogger<GameHub> _logger;
 
         public GameHub(ILogger<GameHub> l)
         {
             _logger = l;
         }
+
         public async Task SendMessage(string message, string connectionId)
         {
             await Clients.All.SendAsync("ReceiveMessage", message, connectionId);
@@ -28,22 +31,26 @@ namespace itr5.Hubs
 
         public string GetConnectionId() => Context.ConnectionId;
 
-        public string NewConnection()
+        public async Task NewGame()
         {
-            _logger.LogInformation(waitingPlayer);
+            // _logger.LogInformation("New connection: " + Context.ConnectionId);
+            availableGames[Context.ConnectionId] = new string[] { };
+        }
 
-            if(waitingPlayer == null)
-            {
-                waitingPlayer = Context.ConnectionId;
-                return null;
-            }
+        public string[] GetAllGames()
+        {
+            var keys = availableGames.Keys;
+            // _logger.LogInformation(Convert.ToString(keys.Count));
+            string[] array = new string[keys.Count];
+            keys.CopyTo(array, 0);
+            return array;
+        }
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            string[] res;
+            availableGames.TryRemove(Context.ConnectionId, out res);
 
-            string temp = waitingPlayer;
-            waitingPlayer = null;
-            
-            Clients.User(waitingPlayer).SendAsync("AssignOpponent", Context.ConnectionId);
-
-            return temp;
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }
