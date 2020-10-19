@@ -50,7 +50,8 @@
         });
 
         if(connectTo === ""){
-            connection.invoke("NewGame").then(()=>{});
+            alert("creating new game");
+            connection.invoke("NewGame");
         }
         else{
             alert("Will connect to: " + connectTo);

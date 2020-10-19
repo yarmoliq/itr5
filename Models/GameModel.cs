@@ -21,6 +21,7 @@ namespace itr5.Models
         {
             Id = creator.Id;
             player1 = creator;
+            player2 = null;
         }
     }
 }

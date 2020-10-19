@@ -20,54 +20,40 @@ namespace itr5.Hubs
             _logger = l;
         }
 
-        public override async Task OnConnectedAsync()
-        {
-            PlayerModel newPlayer = new PlayerModel(Context.ConnectionId);
-            players[newPlayer.Id] = newPlayer;
-        
-            await base.OnConnectedAsync();
-        }
-//
-        // public async Task SendMessage(string message, string connectionId)
-        // {
-        //     await Clients.All.SendAsync("ReceiveMessage", message, connectionId);
-        // }
-        //
-        // public async Task MakeMove(string opponentConnectionId, string move)
-        // {
-        //     await Clients.User(opponentConnectionId).SendAsync("OpponentsMove", move);
-        // }
-
         public string GetConnectionId() => Context.ConnectionId;
 
-        public async Task NewGame()
+        public void NewGame()
         {
-            PlayerModel player;
-            if(players.TryGetValue(Context.ConnectionId, out player))
+            string id = Context.ConnectionId;
+            players.TryAdd(id, new PlayerModel(id));
+
+
+            GameModel newGame = new GameModel(players[id]);
+            if(availableGames.TryAdd(newGame.Id, newGame))
             {
-                availableGames[player.Id] = new GameModel(player);
-                player.GameId = player.Id; // see: GameModel constructor
+                players[id].GameId = id;
             }
         }
 
-        public async Task<string> ConnectToGame(string gameId)
+        public string ConnectToGame(string gameId)
         {
-            // await this.Clients.Caller.SendAsync("Redirect", "Game", "Index");
-
-            PlayerModel player;
-            if( players.TryGetValue(Context.ConnectionId, out player) )
+            GameModel targetGame;
+            if( availableGames.TryGetValue(gameId, out targetGame) )
             {
-                GameModel game;
-                if( availableGames.TryGetValue(gameId, out game) )
+                string id = Context.ConnectionId;
+                var x = players.TryAdd(id, new PlayerModel(id));
+
+                players[id].GameId = gameId;
+
+                if(targetGame.player2 == null)
                 {
-                    if(game.player2 == null)
-                    {
-                        // await this.Clients.Client(Context.ConnectionId).SendAsync("RedirectToGame", gameId);
-                        return gameId;
-                        // _logger.LogWarning(player.Id + " is connecting to " + gameId);
-                        // game.player2 = player;
-                    }
+                    targetGame.player2 = players[id];
                 }
+                else
+                {
+                    targetGame.watchers.Add(players[id]);
+                }
+                return targetGame.Id;
             }
 
             return String.Empty;
@@ -83,28 +69,42 @@ namespace itr5.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             PlayerModel disconnectedPlayer;
-            if (players.TryGetValue(Context.ConnectionId, out disconnectedPlayer))
+            if( players.TryGetValue(Context.ConnectionId, out disconnectedPlayer) )
             {
                 GameModel game;
-                if (availableGames.TryGetValue(disconnectedPlayer.GameId, out game))
+                if( availableGames.TryGetValue(disconnectedPlayer.GameId, out game) )
                 {
-                    if (game.player1 == disconnectedPlayer ||
-                        game.player2 == disconnectedPlayer)
+                    if(game.player1 == disconnectedPlayer || game.player2 == disconnectedPlayer)
                     {
-                        // kill game
-                        GameModel removeGame;
-                        availableGames.TryRemove(game.Id, out removeGame);
+                        // we cant skip player1 != null because we
+                        // construct game object with player1 assignment
+                        await this.Clients.Client(game.player1.Id).SendAsync("Redirect", "Home", "Index");
+                        PlayerModel p;
+                        players.TryRemove(game.player1.Id, out p);
+
+                        if(game.player2 != null)
+                        {
+                            await this.Clients.Client(game.player2.Id).SendAsync("Redirect", "Home", "Index");
+                            players.TryRemove(game.player2.Id, out p);
+                        }
+
+                        game.watchers.ForEach(async (watcher) =>
+                        {
+                            await this.Clients.Client(watcher.Id).SendAsync("Redirect", "Home", "Index");
+                            PlayerModel t;
+                            players.TryRemove(watcher.Id, out t);
+                        });
+
+                        GameModel g;
+                        availableGames.TryRemove(game.Id, out g);
                     }
                     else
                     {
                         game.watchers.Remove(disconnectedPlayer);
                     }
                 }
-
-                PlayerModel removePlayer;
-                players.TryRemove(disconnectedPlayer.Id, out removePlayer);
             }
-
+            
             await base.OnDisconnectedAsync(exception);
         }
     }
