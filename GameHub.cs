@@ -22,6 +22,75 @@ namespace itr5.Hubs
 
         public string GetConnectionId() => Context.ConnectionId;
 
+        public async Task SendMove(string s_cell)
+        {
+            int cell = Convert.ToInt16(s_cell);
+
+            PlayerModel player;
+            if ( players.TryGetValue(Context.ConnectionId, out player) )
+            {
+                GameModel game;
+                if( availableGames.TryGetValue(player.GameId, out game) )
+                {
+                    if(game.Board[cell] != String.Empty)
+                        return;
+
+                    bool updateGame = false;
+                    if(game.player1turn == true)
+                    {
+                        if(game.player1 == player)
+                        {
+                            updateGame = true;
+                            game.player1turn = false;
+                            game.Board[cell] = "X";
+                        }
+                    }
+                    else
+                    {
+                        if(game.player2 == player)
+                        {
+                            updateGame = true;
+                            game.player1turn = true;
+                            game.Board[cell] = "O";
+                        }
+                    }
+
+                    if (updateGame)
+                    {
+                        await UpdateGame(game.Id);
+                        var w = game.GameWon();
+                        // _logger.LogWarning(w.Key);
+                        if(w.Key == true)
+                        {
+                            await this.Clients.Client(game.player1.Id).SendAsync("GameWon", "Player " + w.Value.Id + " won the game!");
+                            await this.Clients.Client(game.player2.Id).SendAsync("GameWon", "Player " + w.Value.Id + " won the game!");
+                            game.watchers.ForEach(async (watcher) =>
+                            {
+                                await this.Clients.Client(watcher.Id).SendAsync("GameWon", "Player " + w.Value.Id + " won the game!");
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task<bool> UpdateGame(string gameId)
+        {
+            GameModel game;
+            if (availableGames.TryGetValue(gameId, out game) == false)
+                return false;
+
+            await this.Clients.Client(game.player1.Id).SendAsync("GameUpdate", game.Board);
+            if(game.player2 != null)
+                await this.Clients.Client(game.player2.Id).SendAsync("GameUpdate", game.Board);
+
+            game.watchers.ForEach(async (watcher) =>
+            {
+                await this.Clients.Client(watcher.Id).SendAsync("GameUpdate", game.Board);
+            });
+
+            return true;
+        }
         public void NewGame()
         {
             string id = Context.ConnectionId;
@@ -45,8 +114,6 @@ namespace itr5.Hubs
 
                 players[id].GameId = gameId;
 
-                // _logger.LogWarning("Connected " + id + " to " + targetGame.player1.Id);
-
                 if(targetGame.player2 == null)
                 {
                     targetGame.player2 = players[id];
@@ -55,6 +122,12 @@ namespace itr5.Hubs
                 {
                     targetGame.watchers.Add(players[id]);
                 }
+
+                this.Clients.Caller.SendAsync("GameUpdate", targetGame.Board);
+            }
+            else
+            {
+                this.Clients.Caller.SendAsync("Redirect", "Home", "Index", "Game was not found");
             }
         }
 
@@ -85,19 +158,19 @@ namespace itr5.Hubs
                     {
                         // we cant skip player1 != null because we
                         // construct game object with player1 assignment
-                        await this.Clients.Client(game.player1.Id).SendAsync("Redirect", "Home", "Index");
+                        await this.Clients.Client(game.player1.Id).SendAsync("Redirect", "Home", "Index", "One of players has disconnected");
                         PlayerModel p;
                         players.TryRemove(game.player1.Id, out p);
 
                         if(game.player2 != null)
                         {
-                            await this.Clients.Client(game.player2.Id).SendAsync("Redirect", "Home", "Index");
+                            await this.Clients.Client(game.player2.Id).SendAsync("Redirect", "Home", "Index", "One of players has disconnected");
                             players.TryRemove(game.player2.Id, out p);
                         }
 
                         game.watchers.ForEach(async (watcher) =>
                         {
-                            await this.Clients.Client(watcher.Id).SendAsync("Redirect", "Home", "Index");
+                            await this.Clients.Client(watcher.Id).SendAsync("Redirect", "Home", "Index", "One of players has disconnected");
                             PlayerModel t;
                             players.TryRemove(watcher.Id, out t);
                         });

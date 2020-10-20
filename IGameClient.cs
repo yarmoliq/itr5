@@ -4,10 +4,10 @@ namespace itr5.Hubs
 {
     public interface IGameClient
     {
-        Task Move(string move);
+        Task GameUpdate(string[] board); // there is 9 cells
 
-        Task Redirect(string controller, string action);
+        Task GameWon(string message);
 
-        Task RedirectToGame(string gameId);
+        Task Redirect(string controller, string action, string message);
     }
 }

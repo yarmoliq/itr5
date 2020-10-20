@@ -13,23 +13,23 @@
 
 <table id="tictactoe-table">
     <tr>
-        <td id="cell_1"></td>
-        <td id="cell_2"></td>
-        <td id="cell_3"></td>
+        <td id="0"></td>
+        <td id="1"></td>
+        <td id="2"></td>
     </tr>
     <tr>
-        <td id="cell_4"></td>
-        <td id="cell_5"></td>
-        <td id="cell_6"></td>
+        <td id="3"></td>
+        <td id="4"></td>
+        <td id="5"></td>
     </tr>
     <tr>
-        <td id="cell_7"></td>
-        <td id="cell_8"></td>
-        <td id="cell_9"></td>
+        <td id="6"></td>
+        <td id="7"></td>
+        <td id="8"></td>
     </tr>
 </table>
 
-<button onclick="printOC()">check connection</button>
+@* <button onclick="printOC()">check connection</button> *@
 
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/getUrlParams.js"></script>
@@ -53,19 +53,39 @@
             connection.invoke("NewGame");
         }
         else{
-            connection.invoke("ConnectToGame", connectTo).then(()=>{
-                alert("Connected to: " + connectTo);
-            });
+            connection.invoke("ConnectToGame", connectTo);
         }
 
     });
 
+    // not used right now
     let printOC = function(){
         console.log("PRINTING OPPONENTS CONNECTION ID: " + opponentConnectionId);
     };
 
+    document.getElementById("tictactoe-table").addEventListener("click", function(event){
+        let cell = event.target.id;
+        if(cell != "tictactoe-table"){
+            connection.invoke("SendMove", cell);
+        }
+    });
+
+    connection.on("GameUpdate", function (board) {
+        console.log("game update");
+        for(let i = 0; i < 9; i++){
+            document.getElementById(i).innerHTML = board[i];
+        }
+    });
+
+    connection.on("GameWon", function (message) {
+        alert(message);
+        window.location.href = "/Home/Index";
+    });
         
-    //connection.on("Redirect",(controller, view)=>{
-    //    window.location.href = "/"+controller+"/" + view;
-    //});    
+    connection.on("Redirect", function (controller, action, message) {
+        alert(message);
+        window.location.href = "/"+controller+"/" + action;
+    });
+
+    
 </script>

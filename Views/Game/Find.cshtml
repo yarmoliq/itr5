@@ -42,7 +42,12 @@
                 bt.appendChild( document.createTextNode(game[2]) );
                 
                 const tile = document.createElement("button");
-                tile.setAttribute("class", "bg-green");
+                if(parseInt(game[2], 10)  > 1){
+                    tile.setAttribute("class", "bg-blue");
+                }
+                else{
+                    tile.setAttribute("class", "bg-green");
+                }
                 tile.setAttribute("data-role", "tile");
                 tile.setAttribute("data-group-title", "General");
                 tile.setAttribute("id", game[1]);
@@ -55,8 +60,9 @@
 
     $("#available-games-grid").click( function(event){
         let tileClicked = event.target.id;
-        console.log("clicked: " + tileClicked);
         
-        window.location.href = '@Url.Content("~/Game/Index?gameId=")' + tileClicked;
+        if(tileClicked != "available-games-grid"){
+            window.location.href = '@Url.Content("~/Game/Index?gameId=")' + tileClicked;
+        }
     });
 </script>
