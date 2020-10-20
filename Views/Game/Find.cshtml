@@ -38,7 +38,7 @@
                 const game = piece.split(",");
                 
                 const bt = document.createElement("span");
-                bt.setAttribute("class", "badge-top");
+                bt.setAttribute("class", "badge-bottom");
                 bt.appendChild( document.createTextNode(game[2]) );
                 
                 const tile = document.createElement("button");
@@ -49,6 +49,7 @@
                     tile.setAttribute("class", "bg-green");
                 }
                 tile.setAttribute("data-role", "tile");
+                tile.setAttribute("data-size", "medium");
                 tile.setAttribute("data-group-title", "General");
                 tile.setAttribute("id", game[1]);
                 tile.appendChild( document.createTextNode(game[0]) );

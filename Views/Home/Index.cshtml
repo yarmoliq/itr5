@@ -7,7 +7,7 @@
 
 <div class="d-flex justify-content-around">
 
-    <button  class="btn-lg" onclick="location.href='@Url.Action("Index", "Game")'"> 
+    <button  class="btn-lg" onclick="newGame()"> 
         <i class="fa fa-plus"></i>    
         New game
     </button>
@@ -18,3 +18,13 @@
     </button>
 
 </div>
+
+<script>
+function newGame() {
+    var gameName = prompt("Enter game name", "New game");
+
+    if (gameName != null) {
+        window.location.href = '@Url.Content("~/Game/Index?gameName=")' + gameName;
+    }
+}
+</script>

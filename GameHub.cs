@@ -91,13 +91,14 @@ namespace itr5.Hubs
 
             return true;
         }
-        public void NewGame()
+        public void NewGame(string gameName)
         {
             string id = Context.ConnectionId;
             players.TryAdd(id, new PlayerModel(id));
 
 
             GameModel newGame = new GameModel(players[id]);
+            newGame.Name = gameName;
             if(availableGames.TryAdd(newGame.Id, newGame))
             {
                 players[id].GameId = id;

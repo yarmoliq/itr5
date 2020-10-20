@@ -6,8 +6,11 @@
 <style>
     td {
     border: 1px solid black;
-    height: 200px;
-    width: 200px;
+    height: 100px;
+    width: 100px;
+    }
+    h1 {
+    text-align: center;
     }
 </style>
 
@@ -50,7 +53,7 @@
         });
 
         if(connectTo === ""){
-            connection.invoke("NewGame");
+            connection.invoke("NewGame", '@Model.GameId'); // why GameId? see: GameController/Index
         }
         else{
             connection.invoke("ConnectToGame", connectTo);
@@ -73,7 +76,7 @@
     connection.on("GameUpdate", function (board) {
         console.log("game update");
         for(let i = 0; i < 9; i++){
-            document.getElementById(i).innerHTML = board[i];
+            document.getElementById(i).innerHTML = "<h1>" + board[i] + "</h1>";
         }
     });
 
